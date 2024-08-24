@@ -48,15 +48,6 @@ class Player {
   }
 }
 
-// class Monster {  //원본
-//   constructor() {
-//     this.hp = 100;
-//   }
-
-//   attack() {
-//     // 몬스터의 공격
-//   }
-// }
 
 class Monster {
   constructor(stage) {
@@ -66,10 +57,6 @@ class Monster {
   }
 
   attack(player) {
-    // 몬스터의 공격
-    // let damage = Math.random() < 0.7 ? 10 : 30; // 70% 확률로 10뎀, 30% 확률로 30
-    // player.hp -= damage;
-    // return damage;
     let damage;
     let hitChance = Math.random();
     if (hitChance < 0.2) {
@@ -121,7 +108,7 @@ const battle = async (stage, player, monster) => {
 
     console.log(
       chalk.green(
-        `\n1. 기본공격 \n2. 스킬 \n3. 아무것도 하지 않는다 \n4. 도주하기`
+        `\n1. 기본공격 \n2. 스킬 \n3. 방어자세를 취한다. \n4. 도주하기`
       )
     ); // 플레이어한테 선택지를 줌
     const choice = readlineSync.question("용사는 무얼 할까?? "); // 단순 나레이션
@@ -146,34 +133,12 @@ const battle = async (stage, player, monster) => {
         displayStatus(stage, player, monster); // 몹잡고 최종 상태 불러오기
         logs.push(chalk.green(`  << 몬스터를 처치했습니다! >> `));
         logs.forEach((log) => console.log(log));
-
+        
         await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
 
-        console.clear();
-        console.log(
-          chalk.cyanBright(`용사는 가던 길을 마저 걷기 시작했습니다.. `)
-        );
-
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
-
-        console.clear();
-        console.log(chalk.cyanBright(`앗! 야생의 몬스터가 나타났다! `));
-
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
-
-        // break;
-        return;
+        return "monster_defeated"; // 몬스터를 처치했음을 호출자에게 반환합니다.
+        
       }
-
-      // 추가? 몬스터가 반격
-      // 추가? 몬스터도 플레이어에게 공격
-
-      // let monsterDamage = monster.attack(player); // 몹->플레이어 평타 원본. 아래안되면 지우고 이거 살리삼
-      // logs.push(
-      //   chalk.red(`몬스터가 용사에게 `) +
-      //     chalk.yellow(` ${monsterDamage}`) +
-      //     chalk.red(` 만큼 피해를 입혔습니다.`)
-      // );
 
       let result = monster.attack(player);
       if (result.message) {
@@ -203,7 +168,6 @@ const battle = async (stage, player, monster) => {
       let attackIndex = parseInt(attackChoice, 10) - 1;
 
       if (attackIndex >= 0 && attackIndex < player.skills.length) {
-        // let damage = player.useskills(attackIndex, monster);  // 아래안되면 아래껀 지우고 되살릴 원본임
         let result = player.useskills(attackIndex, monster);
         logs.push(chalk.red(result.message)); //쿨타임중일때 메시지
 
@@ -232,42 +196,8 @@ const battle = async (stage, player, monster) => {
 
         await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
 
-        console.clear();
-        console.log(
-          chalk.cyanBright(`용사는 가던 길을 마저 걷기 시작했습니다.. `)
-        );
-
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
-
-        console.clear();
-        console.log(chalk.cyanBright(`앗! 야생의 몬스터가 나타났다! `));
-
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
-
-        // break;
-        // return;
-        return "monster_defeated";
+        return "monster_defeated"; // 몬스터를 처치했음을 호출자에게 반환합니다.
       }
-
-      // 플레이어 스킬에 따른 몬스터 공격
-      // let monsterDamage = monster.attack(player);
-      // logs.push(
-      //   chalk.red(`몬스터가 용사에게 `) +
-      //   chalk.yellow(` ${monsterDamage}`) +
-      //   chalk.red(` 만큼 피해를 입혔습니다.`)
-      // );
-
-      // let result = monster.attack(player);
-      // if (result.damage > 0) {
-      //   logs.push(
-      //     chalk.red(`몬스터가 용사에게 `) +
-      //     chalk.yellow(`${result.damage}`) +
-      //     chalk.red(` 만큼 피해를 입혔습니다.`)
-      //   );
-      // }
-      // if (result.message) {
-      //   logs.push(chalk.cyanBright(result.message)); //에러나면 이거랑 위에꺼 삭제하고 그 위에꺼 다시 활성화, 플레이어클래스도 수정
-      // }
 
       let result = monster.attack(player);
       if (result.message) {
@@ -285,7 +215,27 @@ const battle = async (stage, player, monster) => {
         return "player_defeated";
       }
     } else if (choice === "3") {
-      logs.push(chalk.yellow(`용사는 아무것도 하지 않았습니다. `));
+      let blockChance = Math.random();
+      if (blockChance <= 0.65) {
+        logs.push(chalk.yellow(`용사는 몸을 한껏 웅크려 방어자세를 취했습니다... `));
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
+        logs.push(chalk.yellow(`..!! 공격을 막아냈다! `));
+      } else {
+        let result = monster.attack(player);
+        if (result.damage === 0) {
+          logs.push(chalk.cyanBright(`방어에 실패했지만 몬스터도 헛손질을 했다! 운이 좋았다!`));
+        } else {
+        let increaseDamage = result.damage * 2;
+        player.hp -= result.damage;
+        logs.push(
+          chalk.red(`..으윽!!! 공격을 막아내지 못했다..`) +
+          chalk.red(`몬스터가 용사에게 `) +
+          chalk.yellow(`${increaseDamage}`) +
+          chalk.red(` 만큼 피해를 입혔습니다.`)
+        );
+      }
+    }      
+
     } else if (choice === "4") {
       let escapeChance = Math.random();
       if (escapeChance <= 0.3) {
@@ -333,11 +283,6 @@ export async function startGame() {
       }
     } while (battleresult === "escape"); // 도주 성공 시 전투를 재시작
 
-    // if (player.hp <= 0) {
-    //   console.log(chalk.red(`You Died.`));
-    //   break;
-    // }
-
     if (battleresult === "player_defeated") {
       console.clear();
       console.log(chalk.red(`You Died.`));
@@ -345,9 +290,29 @@ export async function startGame() {
       break;
     }
 
-    // 스테이지 클리어 및 게임 종료 조건
+    // 스테이지 클리어 시 체력회복
+    if (battleresult === "monster_defeated") {
+      player.hp = Math.min(player.hp + 50, 100); //최대 체력을 넘기지 않도록 제한
+      console.clear();
+      console.log(
+        chalk.green(`부상을 치료합니다... 현재 체력은 ${player.hp} 입니다.`)
+      );
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    stage++;
+      stage++;
+
+      if (stage <= 10) {
+        console.clear();
+        console.log(
+          chalk.cyanBright(`용사는 가던 길을 마저 걷기 시작했습니다.. `)
+        );
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        console.clear();
+        console.log(chalk.cyanBright(`앗! 야생의 몬스터가 나타났다!`));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+    }
   }
   if (stage > 10) {
     console.clear();
