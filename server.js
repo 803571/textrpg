@@ -26,7 +26,7 @@ function displayLobby() {
     console.log(chalk.yellowBright.bold('TexTRPG에 오신것을 환영합니다!'));
 
     // 설명 텍스트
-    console.log(chalk.green('Ver. 0.1'));
+    console.log(chalk.green('Ver. 1.0'));
     console.log();
 
     // 옵션들

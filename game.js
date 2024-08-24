@@ -34,7 +34,8 @@ class Player {
 
     if (skills === "발악") {
       let chance = Math.random();
-      damage = chance < 0.7 ? 10 * 2 : 20 * 2; // 70%확률로 10*2 데미지, 그외 확률로 20*2 데미지
+      // damage = chance < 0.7 ? 10 * 2 : 20 * 2; // 70%확률로 10*2 데미지, 그외 확률로 20*2 데미지
+      damage = this.attackPower * (chance < 0.7 ? 1.5 : 3);
       monster.hp -= damage;
     } else if (skills === "응급치료") {
       this.hp = Math.min(this.hp + 15, 100); //최대 체력 이상으로는 체력회복 불가
@@ -54,7 +55,6 @@ class Player {
     this.skillCooldowns = this.skillCooldowns.map((cd) => Math.max(cd - 1, 0));
   }
 }
-
 
 class Monster {
   constructor(stage) {
@@ -140,11 +140,10 @@ const battle = async (stage, player, monster) => {
         displayStatus(stage, player, monster); // 몹잡고 최종 상태 불러오기
         logs.push(chalk.green(`  << 몬스터를 처치했습니다! >> `));
         logs.forEach((log) => console.log(log));
-        
+
         await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
 
         return "monster_defeated"; // 몬스터를 처치했음을 호출자에게 반환합니다.
-        
       }
 
       let result = monster.attack(player);
@@ -224,25 +223,30 @@ const battle = async (stage, player, monster) => {
     } else if (choice === "3") {
       let blockChance = Math.random();
       if (blockChance <= 0.65) {
-        logs.push(chalk.yellow(`용사는 몸을 한껏 웅크려 방어자세를 취했습니다... `));
+        logs.push(
+          chalk.yellow(`용사는 몸을 한껏 웅크려 방어자세를 취했습니다... `)
+        );
         await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
         logs.push(chalk.yellow(`..!! 공격을 막아냈다! `));
       } else {
         let result = monster.attack(player);
         if (result.damage === 0) {
-          logs.push(chalk.cyanBright(`방어에 실패했지만 몬스터도 헛손질을 했다! 운이 좋았다!`));
+          logs.push(
+            chalk.cyanBright(
+              `방어에 실패했지만 몬스터도 헛손질을 했다! 운이 좋았다!`
+            )
+          );
         } else {
-        let increaseDamage = result.damage * 2;
-        player.hp -= result.damage;
-        logs.push(
-          chalk.red(`..으윽!!! 공격을 막아내지 못했다..`) +
-          chalk.red(`몬스터가 용사에게 `) +
-          chalk.yellow(`${increaseDamage}`) +
-          chalk.red(` 만큼 피해를 입혔습니다.`)
-        );
+          let increaseDamage = result.damage * 2;
+          player.hp -= result.damage;
+          logs.push(
+            chalk.red(`..으윽!!! 공격을 막아내지 못했다..`) +
+              chalk.red(`몬스터가 용사에게 `) +
+              chalk.yellow(`${increaseDamage}`) +
+              chalk.red(` 만큼 피해를 입혔습니다.`)
+          );
+        }
       }
-    }      
-
     } else if (choice === "4") {
       let escapeChance = Math.random();
       if (escapeChance <= 0.3) {
@@ -297,13 +301,24 @@ export async function startGame() {
       break;
     }
 
-    // 스테이지 클리어 시 체력회복
     if (battleresult === "monster_defeated") {
       player.hp = Math.min(player.hp + 50, 100); //최대 체력을 넘기지 않도록 제한
       console.clear();
-      console.log(
-        chalk.green(`부상을 치료합니다... 현재 체력은 ${player.hp} 입니다.`)
-      );
+      
+      
+      // 기본공격력 증가, 20%확률로 2배
+      let increaseAmount = 2;
+      if (Math.random() < 0.2) {
+        increaseAmount = 4;
+        console.log(chalk.yellow(`럭키! 평소보다 더욱 강해진 기분이다. 현재 기본 공격력: ${player.attackPower + increaseAmount}`));
+      } else {
+        console.log(chalk.cyan(`조금 더 강해진 기분이다. 현재 기본 공격력: ${player.attackPower + increaseAmount}`));
+      }
+
+      player.attackPower += increaseAmount; // 공격력 증가 적용
+
+      console.log(chalk.green(`부상을 치료합니다... 현재 체력은 ${player.hp} 입니다.`));
+
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       stage++;
