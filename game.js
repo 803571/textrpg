@@ -9,7 +9,7 @@ class Player {
   constructor() {
     this.hp = 100; // 플레이어 피통
     this.attackPower = 15; // 플레이어 기본데미지
-    this.skills = ["발악"]; //보유한 스킬목록
+    this.skills = ["발악", "응급치료"]; //보유한 스킬목록
     this.skillCooldowns = Array(this.skills.length).fill(0); // 스킬 쿨타임은 최초 0
   }
 
@@ -36,6 +36,13 @@ class Player {
       let chance = Math.random();
       damage = chance < 0.7 ? 10 * 2 : 20 * 2; // 70%확률로 10*2 데미지, 그외 확률로 20*2 데미지
       monster.hp -= damage;
+    } else if (skills === "응급치료") {
+      this.hp = Math.min(this.hp + 15, 100); //최대 체력 이상으로는 체력회복 불가
+      this.skillCooldowns[skillIndex] = 3; // 응치 쿨 3턴
+      return {
+        damage: 0,
+        message: `붕대를 메서 상처부위를 응급치료했다. 체력이 15만큼 회복되었다.`,
+      };
     }
 
     this.skillCooldowns[skillIndex] = 3; // 스킬 쿨다운 3턴
@@ -169,7 +176,7 @@ const battle = async (stage, player, monster) => {
 
       if (attackIndex >= 0 && attackIndex < player.skills.length) {
         let result = player.useskills(attackIndex, monster);
-        logs.push(chalk.red(result.message)); //쿨타임중일때 메시지
+        logs.push(chalk.red(result.message)); // 스킬 사용 메시지 출력
 
         if (result.damage > 0) {
           logs.push(
