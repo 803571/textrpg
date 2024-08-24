@@ -9,6 +9,8 @@ class Player {
   constructor() {
     this.hp = 100; // 플레이어 피통
     this.attackPower = 15; // 플레이어 기본데미지
+    this.skills = ["발악"]; //보유한 스킬목록
+    this.skillCooldowns = Array(this.skills.length).fill(0); // 스킬 쿨타임은 최초 0
   }
 
   attack(monster) {
@@ -17,15 +19,71 @@ class Player {
     monster.hp -= damage;
     return damage;
   }
-}
 
-class Monster {
-  constructor() {
-    this.hp = 100;
+  useskills(skillIndex, monster) {
+    let damage = 0;
+    let skills = this.skills[skillIndex];
+
+    // 스킬이 쿨타임이면 나오는 문구
+    if (this.skillCooldowns[skillIndex] > 0) {
+      return {
+        damage,
+        message: `아직 ${skills} 을(를) 다시 쓰기에는 숨이 차다.. (${this.skillCooldowns[skillIndex]} 만큼 기다리자.)`,
+      };
+    }
+
+    if (skills === "발악") {
+      let chance = Math.random();
+      damage = chance < 0.7 ? 10 * 2 : 20 * 2; // 70%확률로 10*2 데미지, 그외 확률로 20*2 데미지
+      monster.hp -= damage;
+    }
+
+    this.skillCooldowns[skillIndex] = 3; // 스킬 쿨다운 3턴
+    return { damage, message: ` ` }; // 피해를 입히고, 빈 메시지가 나오도록 합니다. 안하면 피해입힌거 두번나옴
   }
 
-  attack() {
+  reduceCooldowns() {
+    // 스킬 쿨다운이 1씩 감소. 단, 이건 모든 스킬 쿨을 1씩 깝니다.
+    this.skillCooldowns = this.skillCooldowns.map((cd) => Math.max(cd - 1, 0));
+  }
+}
+
+// class Monster {  //원본
+//   constructor() {
+//     this.hp = 100;
+//   }
+
+//   attack() {
+//     // 몬스터의 공격
+//   }
+// }
+
+class Monster {
+  constructor(stage) {
+    this.hp = 100 + (stage - 1) * 10; // 스테이지에 따라 피통 증가
+    // this.hp = 100 + stage * 10; // 스테이지에 따라 피통 증가
+    this.attackPower = 10 + stage; //스테이지에 따라 공격력 증가
+  }
+
+  attack(player) {
     // 몬스터의 공격
+    // let damage = Math.random() < 0.7 ? 10 : 30; // 70% 확률로 10뎀, 30% 확률로 30
+    // player.hp -= damage;
+    // return damage;
+    let damage;
+    let hitChance = Math.random();
+    if (hitChance < 0.2) {
+      // 감나빗
+      damage = 0;
+      return { damage, message: `운 좋게 공격을 회피한 것 같다..` };
+    } else if (hitChance < 0.7) {
+      damage = 10; // 10데미지
+    } else {
+      damage = 30; // 10데미지
+    }
+    player.hp -= damage;
+    // return damage;
+    return { damage, message: null };
   }
 }
 
@@ -61,17 +119,27 @@ const battle = async (stage, player, monster) => {
 
     logs.forEach((log) => console.log(log));
 
-    console.log(chalk.green(`\n1. 기본공격 \n2. 스킬 \n3. 아무것도 하지 않는다 \n4. 도주하기`)); // 플레이어한테 선택지를 줌
+    console.log(
+      chalk.green(
+        `\n1. 기본공격 \n2. 스킬 \n3. 아무것도 하지 않는다 \n4. 도주하기`
+      )
+    ); // 플레이어한테 선택지를 줌
     const choice = readlineSync.question("용사는 무얼 할까?? "); // 단순 나레이션
 
     if (choice === "1") {
-      //플레이어가 공격한다를 골랐을 경우
-      let damage = player.attack(monster);
-      logs.push(
-        chalk.green(`용사가 몬스터에게 `) +
-          chalk.yellow(`${damage}`) +
-          chalk.green(` 만큼 피해를 주었습니다.`)
-      );
+      //                                                                                                       ◀ 기본공격
+      let hitChance = Math.random();
+      if (hitChance < 0.6) {
+        let damage = player.attack(monster);
+        logs.push(
+          chalk.green(`용사가 몬스터에게 `) +
+            chalk.yellow(`${damage}`) +
+            chalk.green(` 만큼 피해를 주었습니다.`)
+        );
+      } else {
+        logs.push(chalk.red(`'이런, 손이 미끄러졌다...'`));
+        logs.push(chalk.cyanBright(`빗나감!`));
+      }
 
       if (monster.hp <= 0) {
         console.clear();
@@ -99,6 +167,123 @@ const battle = async (stage, player, monster) => {
 
       // 추가? 몬스터가 반격
       // 추가? 몬스터도 플레이어에게 공격
+
+      // let monsterDamage = monster.attack(player); // 몹->플레이어 평타 원본. 아래안되면 지우고 이거 살리삼
+      // logs.push(
+      //   chalk.red(`몬스터가 용사에게 `) +
+      //     chalk.yellow(` ${monsterDamage}`) +
+      //     chalk.red(` 만큼 피해를 입혔습니다.`)
+      // );
+
+      let result = monster.attack(player);
+      if (result.message) {
+        logs.push(chalk.cyanBright(result.message)); //에러나면 이거랑 위에꺼 삭제하고 그 위에꺼 다시 활성화, 플레이어클래스도 수정
+      }
+      if (result.damage > 0) {
+        logs.push(
+          chalk.red(`몬스터가 용사에게 `) +
+            chalk.yellow(`${result.damage}`) +
+            chalk.red(` 만큼 피해를 입혔습니다.`)
+        );
+      }
+
+      if (player.hp <= 0) {
+        return "player_defeated";
+      }
+    } else if (choice === "2") {
+      //                                                                                                       ◀ 스킬
+      console.log(chalk.blue(`스킬 목록: `));
+      player.skills.forEach((attack, index) => {
+        console.log(
+          `${index + 1}. ${attack} (쿨타임: ${player.skillCooldowns[index] > 0 ? player.skillCooldowns[index] + "턴" : "사용가능"})`
+        );
+      });
+
+      let attackChoice = readlineSync.question(`어떤 스킬을 사용할까?: `);
+      let attackIndex = parseInt(attackChoice, 10) - 1;
+
+      if (attackIndex >= 0 && attackIndex < player.skills.length) {
+        // let damage = player.useskills(attackIndex, monster);  // 아래안되면 아래껀 지우고 되살릴 원본임
+        let result = player.useskills(attackIndex, monster);
+        logs.push(chalk.red(result.message)); //쿨타임중일때 메시지
+
+        if (result.damage > 0) {
+          logs.push(
+            chalk.magenta(
+              `용사는 ${player.skills[attackIndex]}을(를) 발동했다! `
+            ) +
+              chalk.yellow(`${result.damage}`) +
+              chalk.magenta(` 만큼의 피해를 입혔다.`)
+          );
+        }
+      } else {
+        logs.push(
+          chalk.red(
+            `배운 적 없는 걸 열심히 쓰려고 하지말게나, 젊은이... .. 어디선가 이상한 소리가 들리는 듯 하다.`
+          )
+        );
+      }
+
+      if (monster.hp <= 0) {
+        console.clear();
+        displayStatus(stage, player, monster); // 몹잡고 최종 상태 불러오기
+        logs.push(chalk.green(`  << 몬스터를 처치했습니다! >> `));
+        logs.forEach((log) => console.log(log));
+
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
+
+        console.clear();
+        console.log(
+          chalk.cyanBright(`용사는 가던 길을 마저 걷기 시작했습니다.. `)
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
+
+        console.clear();
+        console.log(chalk.cyanBright(`앗! 야생의 몬스터가 나타났다! `));
+
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
+
+        // break;
+        // return;
+        return "monster_defeated";
+      }
+
+      // 플레이어 스킬에 따른 몬스터 공격
+      // let monsterDamage = monster.attack(player);
+      // logs.push(
+      //   chalk.red(`몬스터가 용사에게 `) +
+      //   chalk.yellow(` ${monsterDamage}`) +
+      //   chalk.red(` 만큼 피해를 입혔습니다.`)
+      // );
+
+      // let result = monster.attack(player);
+      // if (result.damage > 0) {
+      //   logs.push(
+      //     chalk.red(`몬스터가 용사에게 `) +
+      //     chalk.yellow(`${result.damage}`) +
+      //     chalk.red(` 만큼 피해를 입혔습니다.`)
+      //   );
+      // }
+      // if (result.message) {
+      //   logs.push(chalk.cyanBright(result.message)); //에러나면 이거랑 위에꺼 삭제하고 그 위에꺼 다시 활성화, 플레이어클래스도 수정
+      // }
+
+      let result = monster.attack(player);
+      if (result.message) {
+        logs.push(chalk.cyanBright(result.message)); // 감나빗
+      }
+      if (result.damage > 0) {
+        logs.push(
+          chalk.red(`몬스터가 용사에게 `) +
+            chalk.yellow(`${result.damage}`) +
+            chalk.red(` 만큼 피해를 입혔습니다.`)
+        );
+      }
+
+      if (player.hp <= 0) {
+        return "player_defeated";
+      }
     } else if (choice === "3") {
       logs.push(chalk.yellow(`용사는 아무것도 하지 않았습니다. `));
     } else if (choice === "4") {
@@ -109,15 +294,20 @@ const battle = async (stage, player, monster) => {
 
         await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
 
-        return 'escape';
+        return "escape";
       } else {
         logs.push(chalk.red(`이런, 도주에 실패했다!`));
       }
     } else {
       logs.push(
-        chalk.red(`올바른 선택을 하시게나, 젊은이.  ... '어디선가 이상한 소리가 들리는 듯 하다.'`));
+        chalk.red(
+          `올바른 선택을 하시게나, 젊은이.  ... '어디선가 이상한 소리가 들리는 듯 하다.'`
+        )
+      );
     }
+    player.reduceCooldowns(); // 매 턴마다 쿨타임을 1씩 감소시킵니다.
   }
+
   logs.forEach((log) => console.log(log)); // 전투가 끝났을 때 로그
 };
 
@@ -134,20 +324,33 @@ export async function startGame() {
 
     do {
       battleresult = await battle(stage, player, monster); // battle 함수에서 도주 성공시 escape를 반환하면, battle 함수가 종료되고 escape를 여기서 호출자(startgame)에게 전달, battleresult변수에 저장
-      if (battleresult === 'escape') {
-        console.log(chalk.cyanBright(`현재 스테이지에서 전투를 재시작합니다. `));
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기        
+      if (battleresult === "escape") {
+        console.log(
+          chalk.cyanBright(`현재 스테이지에서 전투를 재시작합니다. `)
+        );
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
         monster = new Monster(stage); // 도주 후 몹 다시 젠
       }
-    } while (battleresult === 'escape'); // 도주 성공 시 전투를 재시작
+    } while (battleresult === "escape"); // 도주 성공 시 전투를 재시작
 
-    if (player.hp <= 0) {
+    // if (player.hp <= 0) {
+    //   console.log(chalk.red(`You Died.`));
+    //   break;
+    // }
+
+    if (battleresult === "player_defeated") {
+      console.clear();
       console.log(chalk.red(`You Died.`));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       break;
     }
 
     // 스테이지 클리어 및 게임 종료 조건
 
     stage++;
+  }
+  if (stage > 10) {
+    console.clear();
+    console.log(chalk.green(`축하합니다! 숲을 빠져나왔습니다.`));
   }
 }
