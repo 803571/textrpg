@@ -66,6 +66,7 @@ class Monster {
     this.hp = 100 + (stage - 1) * 10; // 스테이지에 따라 피통 증가
     // this.hp = 100 + stage * 10; // 스테이지에 따라 피통 증가
     this.attackPower = 10 + stage; //스테이지에 따라 공격력 증가
+
   }
 
   attack(player) {
@@ -116,7 +117,7 @@ const battle = async (stage, player, monster) => {
     console.clear();
     displayStatus(stage, player, monster);
 
-    logs.forEach((log) => console.log(log));
+    logs.forEach((log) => console.log(log)); // 현재까지의 로그 출력
 
     console.log(
       chalk.green(
@@ -127,6 +128,8 @@ const battle = async (stage, player, monster) => {
 
     if (choice === "1") {
       //                                                                                                       ◀ 기본공격
+      logs = []; // 매턴 마다 로그를 초기화
+
       let hitChance = Math.random();
       if (hitChance < 0.6) {
         let damage = player.attack(monster);
@@ -168,6 +171,7 @@ const battle = async (stage, player, monster) => {
       }
     } else if (choice === "2") {
       //                                                                                                       ◀ 스킬
+      logs = []; // 매턴 마다 로그를 초기화
 
       let allSkillOnCooldown = player.skillCooldowns.every(
         (cd) => cd > 0
@@ -243,7 +247,10 @@ const battle = async (stage, player, monster) => {
       if (player.hp <= 0) {
         return "player_defeated";
       }
-    } else if (choice === "3") {let blockChance = Math.random();
+    } else if (choice === "3") {
+      logs = []; // 매턴 마다 로그를 초기화
+
+      let blockChance = Math.random();
       if (blockChance <= 0.65) {
         logs.push(
           chalk.yellow(`용사는 몸을 한껏 웅크려 방어자세를 취했습니다... `)
@@ -274,6 +281,8 @@ const battle = async (stage, player, monster) => {
         }
       }
     } else if (choice === "4") {
+      logs = []; // 매턴 마다 로그를 초기화
+
       let escapeChance = Math.random();
       if (escapeChance <= 0.3) {
         console.clear();
@@ -322,7 +331,7 @@ export async function startGame() {
 
     if (battleresult === "player_defeated") {
       console.clear();
-      console.log(chalk.red(`You Died.`));
+      console.log(chalk.red(`당신은 사망하였습니다.. 게임을 종료합니다. `));
       await delay();
       break;
     }

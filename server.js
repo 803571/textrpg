@@ -10,8 +10,8 @@ function displayLobby() {
     // 타이틀 텍스트
     console.log(
         chalk.cyan(
-            figlet.textSync('TexT - RPG', {
-                font: 'Standard',
+            figlet.textSync('Text RPG', {
+                font: 'Speed',
                 horizontalLayout: 'default',
                 verticalLayout: 'default'
             })
@@ -23,16 +23,16 @@ function displayLobby() {
     console.log(line);
 
     // 게임 이름
-    console.log(chalk.yellowBright.bold('TexTRPG에 오신것을 환영합니다!'));
+    console.log(chalk.yellowBright.bold('환영합니다, 숲을 헤매는 용사 여러분!'));
 
     // 설명 텍스트
-    console.log(chalk.green('Ver. 1.2'));
+    console.log(chalk.green('Ver. 1.3'));
     console.log();
 
     // 옵션들
-    console.log(chalk.blue('1.') + chalk.white(' 새로운 여정'));
+    console.log(chalk.blue('1.') + chalk.white(' 숲으로 들어가기'));
     console.log(chalk.blue('2.') + chalk.white(' 업적 열람'));
-    console.log(chalk.blue('3.') + chalk.white(' 옵션'));
+    console.log(chalk.blue('3.') + chalk.white(' 개발자가 하고 싶은 말'));
     console.log(chalk.blue('4.') + chalk.white(' 종료'));
 
     // 하단 경계선
@@ -73,12 +73,12 @@ async function handleUserInput() {
             startGame();
             break;
         case '2':
-            console.log(chalk.yellow('이제 모험을 떠나는 풋내기 애송이가 업적이 어디있는가. 게임을 시작하세요.'));
+            console.log(chalk.yellow('업적보관함이 텅텅 비었습니다. 게임을 진행하여 업적을 달성해보세요.'));
             // 업적 확인하기 로직을 구현
             handleUserInput();
             break;
         case '3':
-            console.log(chalk.blue('도구함을 잠근 자물쇠의 비밀번호가 기억나지 않습니다.. 게임을 시작하세요.'));
+            console.log(chalk.blue(`스테이지 테마를 추가하고, 테마마다 등장하는 몬스터가 다르도록 구현하려고 했으나 \n문제가 있어 수정하기 전으로 되돌렸습니다. `));
             // 옵션 메뉴 로직을 구현
             handleUserInput();
             break;
