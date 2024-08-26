@@ -4,6 +4,11 @@ import readlineSync from "readline-sync";
 // 이것은, 어렸을 때 하던 파이널판타지가 될 수도 있고, 쯔꾸르가 될 수도 있다.
 // 근데 파판은 안해봄 ㅋㅋ
 
+// 2초 대기
+let delay = async (ms = 2000) => {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 // ====================================== 이곳은 플레이어 스펙, 몬스터 스펙을 보는 구간입니다 ======================================
 class Player {
   constructor() {
@@ -141,7 +146,7 @@ const battle = async (stage, player, monster) => {
         logs.push(chalk.green(`  << 몬스터를 처치했습니다! >> `));
         logs.forEach((log) => console.log(log));
 
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
+        await delay(); // 2초 대기
 
         return "monster_defeated"; // 몬스터를 처치했음을 호출자에게 반환합니다.
       }
@@ -172,7 +177,7 @@ const battle = async (stage, player, monster) => {
         console.log(
           chalk.red(`모든 스킬이 쿨타임이다. 다른 행동을 취하자. `)
         );
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
+        await delay(); // 2초 대기
         continue;
       }
 
@@ -218,7 +223,7 @@ const battle = async (stage, player, monster) => {
         logs.push(chalk.green(`  << 몬스터를 처치했습니다! >> `));
         logs.forEach((log) => console.log(log));
 
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
+        await delay(); // 2초 대기
 
         return "monster_defeated"; // 몬스터를 처치했음을 호출자에게 반환합니다.
       }
@@ -243,7 +248,7 @@ const battle = async (stage, player, monster) => {
         logs.push(
           chalk.yellow(`용사는 몸을 한껏 웅크려 방어자세를 취했습니다... `)
         );
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
+        await delay(); // 2초 대기
         logs.push(chalk.yellow(`..!! 공격을 막아냈다! `));
       } else {
         let result = monster.attack(player);
@@ -274,7 +279,7 @@ const battle = async (stage, player, monster) => {
         console.clear();
         console.log(chalk.green(`성공적으로 도주했다!!`));
 
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
+        await delay(); // 2초 대기
 
         return "escape";  
       } else {
@@ -310,7 +315,7 @@ export async function startGame() {
         console.log(
           chalk.cyanBright(`현재 스테이지에서 전투를 재시작합니다. `)
         );
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
+        await delay(); // 2초 대기
         monster = new Monster(stage); // 도주 후 몹 다시 젠
       }
     } while (battleresult === "escape"); // 도주 성공 시 전투를 재시작
@@ -318,7 +323,7 @@ export async function startGame() {
     if (battleresult === "player_defeated") {
       console.clear();
       console.log(chalk.red(`You Died.`));
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await delay();
       break;
     }
 
@@ -340,7 +345,7 @@ export async function startGame() {
 
       console.log(chalk.green(`부상을 치료합니다... 현재 체력은 ${player.hp} 입니다.`));
 
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await delay();
 
       stage++;
 
@@ -349,11 +354,11 @@ export async function startGame() {
         console.log(
           chalk.cyanBright(`용사는 가던 길을 마저 걷기 시작했습니다.. `)
         );
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await delay();
 
         console.clear();
         console.log(chalk.cyanBright(`앗! 야생의 몬스터가 나타났다!`));
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await delay();
       }
     }
   }
