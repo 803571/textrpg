@@ -238,8 +238,7 @@ const battle = async (stage, player, monster) => {
       if (player.hp <= 0) {
         return "player_defeated";
       }
-    } else if (choice === "3") {
-      let blockChance = Math.random();
+    } else if (choice === "3") {let blockChance = Math.random();
       if (blockChance <= 0.65) {
         logs.push(
           chalk.yellow(`용사는 몸을 한껏 웅크려 방어자세를 취했습니다... `)
@@ -263,6 +262,10 @@ const battle = async (stage, player, monster) => {
               chalk.yellow(`${increaseDamage}`) +
               chalk.red(` 만큼 피해를 입혔습니다.`)
           );
+
+          if (player.hp <= 0) {
+            return "player_defeated";
+          }
         }
       }
     } else if (choice === "4") {
@@ -273,7 +276,7 @@ const battle = async (stage, player, monster) => {
 
         await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
 
-        return "escape";
+        return "escape";  
       } else {
         logs.push(chalk.red(`이런, 도주에 실패했다!`));
       }
