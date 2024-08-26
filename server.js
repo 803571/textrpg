@@ -26,7 +26,7 @@ function displayLobby() {
     console.log(chalk.yellowBright.bold('TexTRPG에 오신것을 환영합니다!'));
 
     // 설명 텍스트
-    console.log(chalk.green('Ver. 1.0'));
+    console.log(chalk.green('Ver. 1.2'));
     console.log();
 
     // 옵션들
@@ -51,7 +51,7 @@ async function handleUserInput() {
             console.log(chalk.green('게임을 시작합니다.'));
             await new Promise((resolve) => setTimeout(resolve, 1000));
 
-            console.log(chalk.green('개발자가 맵을 갈고 닦는 중..'));
+            console.log(chalk.green('개발자가 맵을 청소하는 중..'));
             console.log(chalk.green('■■■■□□□□□□ 40%'));
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
@@ -61,7 +61,7 @@ async function handleUserInput() {
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
             console.clear();
-            console.log(chalk.green('항해를 떠나기 위해 닻을 올리는 중..'));
+            console.log(chalk.green('항해를 떠나기 위해 선박을 99번 재정비하는 중..'));
             console.log(chalk.green('■■■■■■■■■□ 90%'));
             await new Promise((resolve) => setTimeout(resolve, 2000));
 
