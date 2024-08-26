@@ -163,6 +163,19 @@ const battle = async (stage, player, monster) => {
       }
     } else if (choice === "2") {
       //                                                                                                       ◀ 스킬
+
+      let allSkillOnCooldown = player.skillCooldowns.every(
+        (cd) => cd > 0
+      );
+
+      if (allSkillOnCooldown) {
+        console.log(
+          chalk.red(`모든 스킬이 쿨타임이다. 다른 행동을 취하자. `)
+        );
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // 2초 대기
+        continue;
+      }
+
       console.log(chalk.blue(`스킬 목록: `));
       player.skills.forEach((attack, index) => {
         console.log(
@@ -170,7 +183,12 @@ const battle = async (stage, player, monster) => {
         );
       });
 
-      let attackChoice = readlineSync.question(`어떤 스킬을 사용할까?: `);
+      let attackChoice = readlineSync.question(`(취소는 0) 어떤 스킬을 사용할까? : `);
+      if (attackChoice === "0") {
+        logs.push(chalk.cyanBright(`스킬사용을 취소했다. `));
+        continue;
+      }
+
       let attackIndex = parseInt(attackChoice, 10) - 1;
 
       if (attackIndex >= 0 && attackIndex < player.skills.length) {
